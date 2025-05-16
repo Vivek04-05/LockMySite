@@ -22,19 +22,26 @@ struct BlockerView: View {
     var body: some View {
         ZStack {
             
-            Color.green
+            Color(.systemGray6)
+                .ignoresSafeArea()
             
             VStack {
                 
                 Text("Website Blocker")
                     .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.black)
-                    .padding(.top, 5)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color(.label))
+                    .frame(maxWidth: .infinity,alignment: .bottom)
+                    .frame(height: 50)
+                    .background(Color(.systemGray5).opacity(0.6))
+                    .clipShape(.rect(cornerRadius: 0))
+                
+                   
+                    
                 
                 if !blockDomainArr.isEmpty {
                         ScrollView(.vertical, showsIndicators: false) {
-                            LazyVStack(alignment: .leading, spacing: 8) {
+                            LazyVStack(alignment: .leading, spacing: 12) {
                                 ForEach(blockDomainArr, id: \.self) { item in
                                     listView(title: item)
                                         .padding(.horizontal)
@@ -51,9 +58,18 @@ struct BlockerView: View {
                 }else {
                     Spacer()
                     
-                    Text("Add Website Domain")
-                        .font(.title)
-                        .fontWeight(.bold)
+                    VStack(spacing: 8) {
+                            Text("Your Block List is Empty!")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color(.label))
+                                .multilineTextAlignment(.center)
+                            
+                            Text("Add a Website to Start Focusing.")
+                                .font(.subheadline)
+                                .foregroundStyle(Color(.secondaryLabel))
+                                .multilineTextAlignment(.center)
+                        }
                     
                     Spacer()
                 }
@@ -73,8 +89,6 @@ struct BlockerView: View {
             blockDomainArr = SharedData.getBlockedDomains()
             askPermission()
         }
-
-        .background(Color.red)
     }
     
     // Function Add new Website Domain it
@@ -115,16 +129,17 @@ struct BlockerView: View {
 func listView(title: String) -> some View {
     VStack(alignment: .leading) {
         Text(title)
-            .font(.title3)
+            .font(.headline)
             .fontWeight(.semibold)
             .multilineTextAlignment(.leading)
             .lineLimit(2, reservesSpace: false)
             .padding(.vertical, 12)
-            .padding(.horizontal , 5)
+            .padding(.horizontal , 10)
            
     } .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.white)
-        .cornerRadius(8)
+        .cornerRadius(10)
+        .shadow(radius: 2)
     
 }
 
@@ -135,48 +150,49 @@ func addDomainAlert(domainName : Binding<String> , showAddDomainAlert : Binding<
 
     ZStack {
         
-        Color.black.opacity(0.25)
-            .ignoresSafeArea(.all)
+        Color.black.opacity(0.3)
+            .ignoresSafeArea()
             .onTapGesture {
                     showAddDomainAlert.wrappedValue.toggle()
                 
             }
         
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             Text("Enter Website Name")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .multilineTextAlignment(.center)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundStyle(Color(.label))
                 .padding(.top, 12)
             
             TextField("Enter domain", text: domainName)
                 .font(.system(.headline, weight: .regular))
                 .padding(.horizontal , 15)
                 .padding(.vertical , 15)
-                .foregroundStyle(.black)
-                .background(.gray.opacity(0.28))
-                .clipShape(.rect(cornerRadius: 8))
+                .foregroundStyle(Color(.label))
+                .background(Color(.systemGray5))
+                .clipShape(.rect(cornerRadius: 10))
                 .padding(.horizontal, 10)
             
             
             Button {
-                print("Added")
                 addBtnCompletionHandler()
             } label: {
                 ZStack(alignment: .center) {
                     Text("Add")
-                        .font(.title2)
+                        .font(.headline)
                         .fontWeight(.semibold)
                         .padding(.horizontal , 22)
-                        .padding(.vertical, 8)
-                        .background(.gray.opacity(0.8))
-                        .foregroundStyle(.black)
-                        .clipShape(.rect(cornerRadius: 8))
+                        .padding(.vertical, 10)
+                        .background(Color.blue.opacity(0.8))
+                        .foregroundStyle(.white)
+                        .clipShape(.rect(cornerRadius: 10))
                 }.padding(.bottom, 12)
             }
         }
         .background(.ultraThickMaterial)
-        .padding(.horizontal)
+        .clipShape(.rect(cornerRadius: 15))
+        .padding(.horizontal, 20)
+        .shadow(radius: 5)
         
            
     }.shadow(radius: 5)
@@ -204,10 +220,11 @@ func floatingButton(showAddDomainAlert : Binding<Bool> , isPermissionGranted : B
                 Image(systemName: "plus.circle")
                     .resizable()
                     .frame(width: 30, height: 30)
+                    .foregroundStyle(.white)
                     .scaledToFit()
                     .tint(.white)
                     .padding(20)
-                    .background(Color.brown)
+                    .background(Color.blue.opacity(0.7))
                     .cornerRadius(12)
                     .shadow(radius: 4)
             }
