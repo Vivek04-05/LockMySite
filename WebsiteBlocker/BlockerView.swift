@@ -15,8 +15,11 @@ struct BlockerView: View {
     @State private var showAddDomainAlert: Bool = false
     @State private var isPermissionGranted: Bool = false // To check wether user give permission or not
     
+    @FocusState private var isDomainFieldFocused: Bool
+
+    
     init() {
-//        UIScrollView.appearance().bounces = false
+        UIScrollView.appearance().bounces = false
     }
     
     var body: some View {
@@ -27,7 +30,7 @@ struct BlockerView: View {
             
             VStack {
                 
-                Text("Website Blocker")
+                Text("Block List")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(Color(.label))
@@ -42,16 +45,17 @@ struct BlockerView: View {
                 if !blockDomainArr.isEmpty {
                         ScrollView(.vertical, showsIndicators: false) {
                             LazyVStack(alignment: .leading, spacing: 12) {
-                                ForEach(blockDomainArr, id: \.self) { item in
-                                    listView(title: item)
+                                ForEach(blockDomainArr.indices, id: \.self) { index in
+                                    
+                                    listView(title: blockDomainArr[index]){
+                                        deleteDomain(at: index)
+                                    }
                                         .padding(.horizontal)
-                                }.onDelete { indexSet in
-                                    deleteDomain(at: indexSet)
                                 }
                             }.padding(.bottom, 80)
                                 .padding(.top , 10)
                         }
-                        .scrollBounceBehavior(.basedOnSize)
+//                        .scrollBounceBehavior(.basedOnSize)
                     Spacer()
                    
                         
@@ -79,7 +83,7 @@ struct BlockerView: View {
             floatingButton(showAddDomainAlert: $showAddDomainAlert , isPermissionGranted: $isPermissionGranted)
             
             if showAddDomainAlert {
-                addDomainAlert(domainName: $enteredDomain, showAddDomainAlert: $showAddDomainAlert, addBtnCompletionHandler: {
+                addDomainAlert(domainName: $enteredDomain, showAddDomainAlert: $showAddDomainAlert, isDomainFieldFocused : $isDomainFieldFocused , addBtnCompletionHandler: {
                     self.addDomain(enteredDomain)
                     blockDomainArr = SharedData.getBlockedDomains()
                 })
@@ -106,12 +110,10 @@ struct BlockerView: View {
     }
     
     // Function for delet ean Exitind Domain
-    func deleteDomain(at offsets: IndexSet) {
-        for index in offsets {
+    func deleteDomain(at index: Int) {
             let domain = blockDomainArr[index]
             SharedData.removeBlockedDomain(domain) // Remove domain from persistent storage
-        }
-        blockDomainArr.remove(atOffsets: offsets) // Update the UI list
+        blockDomainArr.remove(at: index) // Update the UI list
     }
     
     func askPermission() {
@@ -126,26 +128,39 @@ struct BlockerView: View {
 
 
 @ViewBuilder
-func listView(title: String) -> some View {
-    VStack(alignment: .leading) {
-        Text(title)
-            .font(.headline)
-            .fontWeight(.semibold)
-            .multilineTextAlignment(.leading)
-            .lineLimit(2, reservesSpace: false)
-            .padding(.vertical, 12)
-            .padding(.horizontal , 10)
-           
-    } .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 2)
+func listView(title: String, onDelete : @escaping () -> Void) -> some View {
+    ZStack(alignment: .topTrailing) {
+           VStack(alignment: .leading) {
+               Text(title)
+                   .font(.headline)
+                   .fontWeight(.semibold)
+                   .multilineTextAlignment(.leading)
+                   .padding(.vertical, 12)
+                   .padding(.horizontal , 10)
+           }
+           .frame(maxWidth: .infinity, alignment: .leading)
+           .background(Color.white)
+           .cornerRadius(10)
+           .shadow(radius: 2)
+
+           Button(action: {
+               onDelete()
+           }) {
+               Image(systemName: "xmark.circle.fill")
+                   .resizable()
+                   .frame(width: 15, height: 15)
+                   .foregroundColor(.gray)
+                  
+           }
+           .offset(x: 5, y: -5)
+       }
+        
     
 }
 
 
 @ViewBuilder
-func addDomainAlert(domainName : Binding<String> , showAddDomainAlert : Binding<Bool> , addBtnCompletionHandler: @escaping () -> ()) -> some View {
+func addDomainAlert(domainName : Binding<String> , showAddDomainAlert : Binding<Bool> ,isDomainFieldFocused : FocusState<Bool>.Binding, addBtnCompletionHandler: @escaping () -> ()) -> some View {
     
 
     ZStack {
@@ -165,13 +180,14 @@ func addDomainAlert(domainName : Binding<String> , showAddDomainAlert : Binding<
                 .padding(.top, 12)
             
             TextField("Enter domain", text: domainName)
-                .font(.system(.headline, weight: .regular))
+//                .font(.system(.headline, weight: .regular))
                 .padding(.horizontal , 15)
                 .padding(.vertical , 15)
                 .foregroundStyle(Color(.label))
                 .background(Color(.systemGray5))
                 .clipShape(.rect(cornerRadius: 10))
                 .padding(.horizontal, 10)
+                .focused(isDomainFieldFocused)
             
             
             Button {
@@ -193,9 +209,14 @@ func addDomainAlert(domainName : Binding<String> , showAddDomainAlert : Binding<
         .clipShape(.rect(cornerRadius: 15))
         .padding(.horizontal, 20)
         .shadow(radius: 5)
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now()){
+            isDomainFieldFocused.wrappedValue = true
+        }
+        }
         
            
-    }.shadow(radius: 5)
+    }
 }
 
 @ViewBuilder

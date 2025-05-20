@@ -13,6 +13,7 @@ struct WebsiteBlockerApp: App {
         WindowGroup {
         
             BlockerView()
+                .preferredColorScheme(.light)
         }
     }
 }
